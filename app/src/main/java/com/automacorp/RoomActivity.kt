@@ -60,6 +60,15 @@ class RoomActivity : ComponentActivity() {
         val viewModel: RoomViewModel by viewModels()
         viewModel.room = RoomService.findByNameOrId(param)
 
+        val onRoomSave: () -> Unit = {
+            if(viewModel.room != null) {
+                val roomDto: RoomDto = viewModel.room as RoomDto
+                RoomService.updateRoom(roomDto.id, roomDto)
+                Toast.makeText(baseContext, "Room ${roomDto.name} was updated", Toast.LENGTH_LONG).show()
+                startActivity(Intent(baseContext, MainActivity::class.java))
+            }
+        }
+
         val navigateBack: () -> Unit = {
             when (sourceActivity) {
                 "MainActivity" -> startActivity(Intent(baseContext, MainActivity::class.java))
@@ -71,7 +80,7 @@ class RoomActivity : ComponentActivity() {
             AutomacorpTheme {
                 Scaffold(
                     topBar = { AutomacorpTopAppBar("Room", navigateBack) },
-                    floatingActionButton = { RoomUpdateButton { /* Save behavior */ } },
+                    floatingActionButton = { RoomUpdateButton(onRoomSave) },
                     modifier = Modifier.fillMaxSize()
                 ) { innerPadding ->
                     if (viewModel.room != null) {
