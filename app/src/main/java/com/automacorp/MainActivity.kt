@@ -20,6 +20,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.automacorp.ui.theme.AutomacorpTheme
+import com.automacorp.utils.NavigationUtils
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.AccountCircle
 import androidx.compose.material3.OutlinedTextField
@@ -37,10 +38,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         val onSayHelloButtonClick: (name: String) -> Unit = { name ->
-            val intent = Intent(this, RoomActivity::class.java).apply {
-                putExtra(ROOM_PARAM, name)
-            }
-            startActivity(intent)
+            NavigationUtils.openRoom(this, name.toLongOrNull() ?: 0L, "MainActivity")
         }
 
         setContent {

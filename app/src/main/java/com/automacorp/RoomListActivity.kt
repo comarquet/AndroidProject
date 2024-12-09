@@ -34,6 +34,7 @@ import com.automacorp.model.WindowDto
 import com.automacorp.service.RoomService
 import com.automacorp.ui.theme.AutomacorpTheme
 import com.automacorp.ui.theme.PurpleGrey80
+import com.automacorp.utils.NavigationUtils
 
 
 class RoomListActivity : ComponentActivity() {
@@ -68,7 +69,7 @@ fun RoomListScreen() {
             RoomItem(
                 room = room,
                 modifier = Modifier,
-                onClick = { openRoom(context, room.id) }
+                onClick = { NavigationUtils.openRoom(context, room.id, "RoomListActivity") }
             )
         }
     }
@@ -106,9 +107,10 @@ fun RoomItem(room: RoomDto, modifier: Modifier = Modifier, onClick: () -> Unit) 
     }
 }
 
-fun openRoom(context: Context, roomId: Long) {
+fun openRoom(context: Context, roomId: Long, source: String) {
     val intent = Intent(context, RoomActivity::class.java).apply {
         putExtra(MainActivity.ROOM_PARAM, roomId.toString())
+        putExtra("SOURCE_ACTIVITY", source)
     }
     context.startActivity(intent)
 }

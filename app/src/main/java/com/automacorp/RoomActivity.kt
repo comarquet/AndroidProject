@@ -56,28 +56,22 @@ class RoomActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         val param = intent.getStringExtra(MainActivity.ROOM_PARAM)
+        val sourceActivity = intent.getStringExtra("SOURCE_ACTIVITY") ?: "MainActivity"
         val viewModel: RoomViewModel by viewModels()
         viewModel.room = RoomService.findByNameOrId(param)
-        val room = RoomService.findByNameOrId(param)
-
-        val onRoomSave: () -> Unit = {
-            if(viewModel.room != null) {
-                val roomDto: RoomDto = viewModel.room as RoomDto
-                RoomService.updateRoom(roomDto.id, roomDto)
-                Toast.makeText(baseContext, "Room ${roomDto.name} was updated", Toast.LENGTH_LONG).show()
-                startActivity(Intent(baseContext, MainActivity::class.java))
-            }
-        }
 
         val navigateBack: () -> Unit = {
-            startActivity(Intent(baseContext, MainActivity::class.java))
+            when (sourceActivity) {
+                "MainActivity" -> startActivity(Intent(baseContext, MainActivity::class.java))
+                "RoomListActivity" -> startActivity(Intent(baseContext, RoomListActivity::class.java))
+            }
         }
 
         setContent {
             AutomacorpTheme {
                 Scaffold(
                     topBar = { AutomacorpTopAppBar("Room", navigateBack) },
-                    floatingActionButton = { RoomUpdateButton(onRoomSave) },
+                    floatingActionButton = { RoomUpdateButton { /* Save behavior */ } },
                     modifier = Modifier.fillMaxSize()
                 ) { innerPadding ->
                     if (viewModel.room != null) {
@@ -85,11 +79,11 @@ class RoomActivity : ComponentActivity() {
                     } else {
                         NoRoom(Modifier.padding(innerPadding))
                     }
-
                 }
             }
         }
     }
+
 }
 
 @Composable
