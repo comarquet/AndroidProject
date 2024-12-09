@@ -108,7 +108,7 @@ fun RoomItem(room: RoomDto, modifier: Modifier = Modifier, onClick: () -> Unit) 
 
 fun openRoom(context: Context, roomId: Long) {
     val intent = Intent(context, RoomActivity::class.java).apply {
-        putExtra("ROOM_ID", roomId.toString())
+        putExtra(MainActivity.ROOM_PARAM, roomId.toString())
     }
     context.startActivity(intent)
 }
