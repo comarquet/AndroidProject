@@ -1,6 +1,5 @@
 package com.automacorp
 
-import android.content.Intent
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
@@ -12,39 +11,18 @@ import com.automacorp.ui.theme.AutomacorpTheme
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Done
-import androidx.compose.material3.ExtendedFloatingActionButton
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.ViewModel
-import com.automacorp.R
 import com.automacorp.model.RoomDto
-import com.automacorp.model.WindowDto
-import com.automacorp.model.WindowStatus
 import com.automacorp.service.RoomService
-import com.automacorp.ui.theme.AutomacorpTheme
-import java.math.BigDecimal
-import java.math.RoundingMode
 import kotlin.math.round
 
 class RoomDetailActivity : ComponentActivity() {
@@ -54,13 +32,13 @@ class RoomDetailActivity : ComponentActivity() {
         val viewModel: RoomViewModel by viewModels()
         val param = intent.getLongExtra(RoomListActivity.ROOM_PARAM, -1L)
         if (param != -1L) {
-            viewModel.room = RoomService.findByNameOrId(param.toString())
+            viewModel.findRoom(param)
         }
 
         val onRoomSave: () -> Unit = {
             if (viewModel.room != null) {
                 val roomDto: RoomDto = viewModel.room as RoomDto
-                RoomService.updateRoom(roomDto.id, roomDto)
+                viewModel.updateRoom(roomDto.id, roomDto)
                 Toast.makeText(baseContext, "Room ${roomDto.name} was updated", Toast.LENGTH_LONG).show()
                 finish()
             }

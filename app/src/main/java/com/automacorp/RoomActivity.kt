@@ -43,16 +43,18 @@ class RoomActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        val param = intent.getStringExtra(MainActivity.ROOM_PARAM)
+        val param = intent.getStringExtra(MainActivity.ROOM_PARAM)?.toLongOrNull()
         val viewModel: RoomViewModel by viewModels()
-        viewModel.room = RoomService.findByNameOrId(param)
+        if (param != null && param != -1L) {
+            viewModel.findRoom(param)
+        }
 
         val onRoomSave: () -> Unit = {
-            if(viewModel.room != null) {
+            if (viewModel.room != null) {
                 val roomDto: RoomDto = viewModel.room as RoomDto
-                RoomService.updateRoom(roomDto.id, roomDto)
+                viewModel.updateRoom(roomDto.id, roomDto)
                 Toast.makeText(baseContext, "Room ${roomDto.name} was updated", Toast.LENGTH_LONG).show()
-                startActivity(Intent(baseContext, MainActivity::class.java))
+                finish()
             }
         }
 
