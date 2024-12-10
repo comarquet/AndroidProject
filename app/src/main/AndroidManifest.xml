@@ -23,6 +23,11 @@
             android:label="RoomService"
             android:theme="@style/Theme.Automacorp" />
         <activity
+            android:name=".RoomDetailActivity"
+            android:exported="false"
+            android:label="RoomService"
+            android:theme="@style/Theme.Automacorp" />
+        <activity
             android:name=".MainActivity"
             android:exported="true"
             android:label="@string/app_name"

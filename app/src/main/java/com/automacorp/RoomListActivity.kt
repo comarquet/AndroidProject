@@ -19,6 +19,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -29,61 +30,80 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.automacorp.MainActivity.Companion.ROOM_PARAM
 import com.automacorp.model.RoomDto
 import com.automacorp.model.WindowDto
 import com.automacorp.service.RoomService
 import com.automacorp.ui.theme.AutomacorpTheme
 import com.automacorp.ui.theme.PurpleGrey80
-import com.automacorp.utils.NavigationUtils
 
 
 class RoomListActivity : ComponentActivity() {
+    companion object {
+        const val ROOM_PARAM = "com.automacorp.room.detail"
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        val navigateBack: () -> Unit = {
+            finish()
+        }
+
         setContent {
             AutomacorpTheme {
-                RoomListScreen()
+                Scaffold(
+                    modifier = Modifier.fillMaxSize(),
+                    topBar = { AutomacorpTopAppBar("Room", navigateBack) }
+                ) { innerPadding ->
+                    RoomListScreen(
+                        modifier = Modifier,
+                        innerPadding = innerPadding,
+                        openRoom = { id -> openRoom(id) }
+                    )
+                }
             }
         }
     }
+
+    private fun openRoom(id: Long) {
+        val intent = Intent(this, RoomDetailActivity::class.java).apply {
+            putExtra(ROOM_PARAM, id)
+        }
+        startActivity(intent)
+    }
 }
 
-
 @Composable
-fun RoomListScreen() {
-    val rooms = RoomService.findAll()
-    val context = LocalContext.current
-
-    fun onClick() {
-
-    }
-
+fun RoomListScreen(
+    modifier: Modifier = Modifier,
+    innerPadding: PaddingValues,
+    openRoom: (id: Long) -> Unit
+) {
     LazyColumn(
-        contentPadding = PaddingValues(8.dp),
+        contentPadding = PaddingValues(4.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp),
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(8.dp)
+        modifier = Modifier.padding(innerPadding),
     ) {
-        items(rooms, key = { it.id }) { room ->
+        val rooms = RoomService.findAll()
+        items(rooms, key = { it.id }) {
             RoomItem(
-                room = room,
-                modifier = Modifier,
-                onClick = { NavigationUtils.openRoom(context, room.id, "RoomListActivity") }
+                room = it,
+                modifier = Modifier.clickable { openRoom(it.id) },
             )
         }
     }
 }
 
 @Composable
-fun RoomItem(room: RoomDto, modifier: Modifier = Modifier, onClick: () -> Unit) {
+fun RoomItem(room: RoomDto, modifier: Modifier = Modifier) {
     Card(
         colors = CardDefaults.cardColors(containerColor = Color.Transparent),
         border = BorderStroke(1.dp, PurpleGrey80),
-        modifier = modifier.clickable { onClick() }
+        modifier = modifier
     ) {
         Row(
-            modifier = modifier.padding(20.dp),
+            modifier = Modifier.padding(20.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Column {
@@ -105,12 +125,4 @@ fun RoomItem(room: RoomDto, modifier: Modifier = Modifier, onClick: () -> Unit) 
             )
         }
     }
-}
-
-fun openRoom(context: Context, roomId: Long, source: String) {
-    val intent = Intent(context, RoomActivity::class.java).apply {
-        putExtra(MainActivity.ROOM_PARAM, roomId.toString())
-        putExtra("SOURCE_ACTIVITY", source)
-    }
-    context.startActivity(intent)
 }

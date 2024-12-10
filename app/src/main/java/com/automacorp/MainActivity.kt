@@ -20,7 +20,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.automacorp.ui.theme.AutomacorpTheme
-import com.automacorp.utils.NavigationUtils
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.AccountCircle
 import androidx.compose.material3.OutlinedTextField
@@ -37,15 +36,18 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val onSayHelloButtonClick: (name: String) -> Unit = { name ->
-            NavigationUtils.openRoom(this, name.toLongOrNull() ?: 0L, "MainActivity")
+        val openRoomActivity: (name: String) -> Unit = { name ->
+            val intent = Intent(this, RoomActivity::class.java).apply {
+                putExtra(ROOM_PARAM, name)
+            }
+            startActivity(intent)
         }
 
         setContent {
             AutomacorpTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
                     Greeting(
-                        onClick = onSayHelloButtonClick,
+                        onClick = openRoomActivity,
                         modifier = Modifier.padding(innerPadding),
                     )
                 }
@@ -83,7 +85,6 @@ fun Greeting(onClick: (name: String) -> Unit,  modifier: Modifier = Modifier) {
         }
     }
 }
-
 
 @Composable
 fun AppLogo(modifier: Modifier) {

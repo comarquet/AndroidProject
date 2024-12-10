@@ -87,19 +87,3 @@ fun AutomacorpTopAppBar(title: String? = null, returnAction: () -> Unit = {}) {
         )
     }
 }
-
-@Preview(showBackground = true)
-@Composable
-fun AutomacorpTopAppBarHomePreview() {
-    AutomacorpTheme {
-        AutomacorpTopAppBar(null)
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun AutomacorpTopAppBarPreview() {
-    AutomacorpTheme {
-        AutomacorpTopAppBar("A page")
-    }
-}

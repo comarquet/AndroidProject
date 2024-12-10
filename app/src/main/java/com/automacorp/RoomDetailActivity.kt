@@ -47,29 +47,31 @@ import java.math.BigDecimal
 import java.math.RoundingMode
 import kotlin.math.round
 
-class RoomViewModel: ViewModel() {
+class RoomDetailViewModel: ViewModel() {
     var room by mutableStateOf <RoomDto?>(null)
 }
 
-class RoomActivity : ComponentActivity() {
+class RoomDetailActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        val param = intent.getStringExtra(MainActivity.ROOM_PARAM)
-        val viewModel: RoomViewModel by viewModels()
-        viewModel.room = RoomService.findByNameOrId(param)
+        val viewModel: RoomDetailViewModel by viewModels()
+        val param = intent.getLongExtra(RoomListActivity.ROOM_PARAM, -1L)
+        if (param != -1L) {
+            viewModel.room = RoomService.findByNameOrId(param.toString())
+        }
 
         val onRoomSave: () -> Unit = {
-            if(viewModel.room != null) {
+            if (viewModel.room != null) {
                 val roomDto: RoomDto = viewModel.room as RoomDto
                 RoomService.updateRoom(roomDto.id, roomDto)
                 Toast.makeText(baseContext, "Room ${roomDto.name} was updated", Toast.LENGTH_LONG).show()
-                startActivity(Intent(baseContext, MainActivity::class.java))
+                finish()
             }
         }
 
         val navigateBack: () -> Unit = {
-            startActivity(Intent(baseContext, MainActivity::class.java))
+            finish()
         }
 
         setContent {
@@ -81,18 +83,16 @@ class RoomActivity : ComponentActivity() {
                 ) { innerPadding ->
                     if (viewModel.room != null) {
                         RoomDetail(viewModel, Modifier.padding(innerPadding))
-                    } else {
-                        NoRoom(Modifier.padding(innerPadding))
                     }
                 }
             }
         }
     }
-
 }
 
+
 @Composable
-fun RoomDetail(model: RoomViewModel, modifier: Modifier = Modifier) {
+fun RoomDetail(model: RoomDetailViewModel, modifier: Modifier = Modifier) {
     Column(modifier = modifier.padding(16.dp)) {
         // Room Name
         Text(
@@ -139,29 +139,4 @@ fun RoomDetail(model: RoomViewModel, modifier: Modifier = Modifier) {
         )
         Text(text = (round((model.room?.targetTemperature ?: 18.0) * 10) / 10).toString())
     }
-}
-
-@Composable
-fun NoRoom(modifier: Modifier = Modifier) {
-    Column(modifier = modifier.padding(16.dp)) {
-        Text(
-            text = stringResource(R.string.act_room_none),
-            style = MaterialTheme.typography.bodyMedium,
-            modifier = Modifier.padding(16.dp)
-        )
-    }
-}
-
-@Composable
-fun RoomUpdateButton(onClick: () -> Unit) {
-    ExtendedFloatingActionButton(
-        onClick = { onClick() },
-        icon = {
-            Icon(
-                Icons.Filled.Done,
-                contentDescription = stringResource(R.string.act_room_save),
-            )
-        },
-        text = { Text(text = stringResource(R.string.act_room_save)) }
-    )
 }
