@@ -47,15 +47,11 @@ import java.math.BigDecimal
 import java.math.RoundingMode
 import kotlin.math.round
 
-class RoomDetailViewModel: ViewModel() {
-    var room by mutableStateOf <RoomDto?>(null)
-}
-
 class RoomDetailActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        val viewModel: RoomDetailViewModel by viewModels()
+        val viewModel: RoomViewModel by viewModels()
         val param = intent.getLongExtra(RoomListActivity.ROOM_PARAM, -1L)
         if (param != -1L) {
             viewModel.room = RoomService.findByNameOrId(param.toString())
@@ -82,7 +78,7 @@ class RoomDetailActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize()
                 ) { innerPadding ->
                     if (viewModel.room != null) {
-                        RoomDetail(viewModel, Modifier.padding(innerPadding))
+                        RoomListDetail(viewModel, Modifier.padding(innerPadding))
                     }
                 }
             }
@@ -92,7 +88,7 @@ class RoomDetailActivity : ComponentActivity() {
 
 
 @Composable
-fun RoomDetail(model: RoomDetailViewModel, modifier: Modifier = Modifier) {
+fun RoomListDetail(model: RoomViewModel, modifier: Modifier = Modifier) {
     Column(modifier = modifier.padding(16.dp)) {
         // Room Name
         Text(
