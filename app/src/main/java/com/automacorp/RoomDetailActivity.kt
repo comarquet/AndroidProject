@@ -22,7 +22,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.automacorp.model.RoomDto
-import com.automacorp.service.RoomService
 import kotlin.math.round
 
 class RoomDetailActivity : ComponentActivity() {
@@ -32,7 +31,7 @@ class RoomDetailActivity : ComponentActivity() {
         val viewModel: RoomViewModel by viewModels()
         val param = intent.getLongExtra(RoomListActivity.ROOM_PARAM, -1L)
         if (param != -1L) {
-            viewModel.findRoom(param)
+            viewModel.findRoomFromList(param)
         }
 
         val onRoomSave: () -> Unit = {

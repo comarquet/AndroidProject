@@ -23,37 +23,38 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import com.automacorp.model.RoomDto
-import com.automacorp.service.ApiServices
-import com.automacorp.service.RoomService
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.launch
+import com.automacorp.model.WindowDto
+import com.automacorp.model.WindowStatus
 import kotlin.math.round
 
 class RoomActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        val param = intent.getStringExtra(MainActivity.ROOM_PARAM)?.toLongOrNull()
+        val param = intent.getStringExtra(MainActivity.ROOM_PARAM)
         val viewModel: RoomViewModel by viewModels()
-        if (param != null && param != -1L) {
-            viewModel.findRoom(param)
+
+        if (param != null) {
+            // Handle input as a name directly and generate a room
+            val generatedRoom = generateRoom(param)
+            viewModel.room = generatedRoom
         }
 
         val onRoomSave: () -> Unit = {
             if (viewModel.room != null) {
                 val roomDto: RoomDto = viewModel.room as RoomDto
-                viewModel.updateRoom(roomDto.id, roomDto)
-                Toast.makeText(baseContext, "Room ${roomDto.name} was updated", Toast.LENGTH_LONG).show()
+                println("Target temperature before save: ${roomDto.targetTemperature}")
+                println("RoomDto before save: $roomDto")
+
+                // Always create the room since it's generated from input
+                viewModel.createRoom(roomDto)
+                runOnUiThread {
+                    Toast.makeText(baseContext, "Room ${roomDto.name} was created", Toast.LENGTH_LONG).show()
+                }
                 finish()
             }
         }
@@ -79,6 +80,27 @@ class RoomActivity : ComponentActivity() {
         }
     }
 
+    private fun generateRoom(name: String): RoomDto {
+        val id = System.currentTimeMillis() // Use current time as unique ID
+        val windows = (1..(1..6).random()).map { generateWindow(it.toLong(), id, name) }
+        return RoomDto(
+            id = id,
+            name = name,
+            currentTemperature = (15..30).random().toDouble(),
+            targetTemperature = (15..22).random().toDouble(),
+            windows = windows
+        )
+    }
+
+    private fun generateWindow(id: Long, roomId: Long, roomName: String): WindowDto {
+        return WindowDto(
+            id = id,
+            name = "Window $id",
+            roomId = roomId,
+            roomName = roomName,
+            windowStatus = WindowStatus.values().random()
+        )
+    }
 }
 
 @Composable
@@ -118,7 +140,10 @@ fun RoomDetail(model: RoomViewModel, modifier: Modifier = Modifier) {
 
         Slider(
             value = model.room?.targetTemperature?.toFloat() ?: 18.0f,
-            onValueChange = { model.room = model.room?.copy(targetTemperature = it.toDouble()) },
+            onValueChange = { 
+                val roundedTemp = Math.round(it * 10) / 10.0
+                model.room = model.room?.copy(targetTemperature = roundedTemp)
+            },
             colors = SliderDefaults.colors(
                 thumbColor = MaterialTheme.colorScheme.secondary,
                 activeTrackColor = MaterialTheme.colorScheme.secondary,

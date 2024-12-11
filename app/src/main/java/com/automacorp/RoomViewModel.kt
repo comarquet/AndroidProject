@@ -12,8 +12,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 
-class RoomViewModel: ViewModel() {
-    var room by mutableStateOf <RoomDto?>(null)
+class RoomViewModel : ViewModel() {
+    var room by mutableStateOf<RoomDto?>(null)
     val roomsState = MutableStateFlow(RoomList())
 
     fun findAll() {
@@ -25,12 +25,12 @@ class RoomViewModel: ViewModel() {
                 }
                 .onFailure {
                     it.printStackTrace()
-                    roomsState.value = RoomList(emptyList(), it.stackTraceToString() )
+                    roomsState.value = RoomList(emptyList(), it.stackTraceToString())
                 }
         }
     }
 
-    fun findRoom(id: Long) {
+    fun findRoomFromList(id: Long) {
         viewModelScope.launch(context = Dispatchers.IO) {
             runCatching { ApiServices.roomsApiService.findById(id).execute() }
                 .onSuccess {
@@ -46,17 +46,45 @@ class RoomViewModel: ViewModel() {
     fun updateRoom(id: Long, roomDto: RoomDto) {
         val command = RoomCommandDto(
             name = roomDto.name,
-            targetTemperature = roomDto.targetTemperature ?.let { Math.round(it * 10) /10.0 },
+            targetTemperature = roomDto.targetTemperature?.let { Math.round(it * 10) / 10.0 },
             currentTemperature = roomDto.currentTemperature,
+            floor = 1,
+            buildingId = -10
         )
+
         viewModelScope.launch(context = Dispatchers.IO) {
             runCatching { ApiServices.roomsApiService.updateRoom(id, command).execute() }
-                .onSuccess {
-                    room = it.body()
+                .onSuccess { response ->
+                    room = response.body()
+                }
+                .onFailure { exception ->
+                    if (exception is retrofit2.HttpException) {
+                        println("HTTP Exception: ${exception.code()}, ${exception.response()?.errorBody()?.string()}")
+                    } else {
+                        println("Exception: ${exception.message}")
+                    }
+                    room = null
+                }
+        }
+    }
+
+    fun createRoom(roomDto: RoomDto) {
+        val command = RoomCommandDto(
+            name = roomDto.name,
+            targetTemperature = roomDto.targetTemperature?.let { Math.round(it * 10) / 10.0 },
+            currentTemperature = roomDto.currentTemperature,
+            floor = 1,
+            buildingId = -10
+        )
+        println("Request Body: $command")
+        viewModelScope.launch(context = Dispatchers.IO) {
+            runCatching { ApiServices.roomsApiService.createRoom(command).execute() }
+                .onSuccess { response ->
+                    println("Response: ${response.body()}")
+                    room = response.body()
                 }
                 .onFailure {
                     it.printStackTrace()
-                    room = null
                 }
         }
     }
