@@ -7,6 +7,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.automacorp.model.RoomCommandDto
 import com.automacorp.model.RoomDto
+import com.automacorp.model.WindowDto
 import com.automacorp.service.ApiServices
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -15,6 +16,8 @@ import kotlinx.coroutines.launch
 class RoomViewModel : ViewModel() {
     var room by mutableStateOf<RoomDto?>(null)
     val roomsState = MutableStateFlow(RoomList())
+    val windowsState = MutableStateFlow<List<WindowDto>>(emptyList())
+    val selectedWindowState = MutableStateFlow<WindowDto?>(null)
 
     fun findAll() {
         viewModelScope.launch(context = Dispatchers.IO) {
@@ -104,6 +107,45 @@ class RoomViewModel : ViewModel() {
                 .onFailure {
                     it.printStackTrace()
                     onComplete() // Ensure we return to the UI even on failure
+                }
+        }
+    }
+
+    fun findWindowsByRoom(roomId: Long) {
+        viewModelScope.launch(context = Dispatchers.IO) {
+            runCatching { ApiServices.roomsApiService.findWindowsByRoom(roomId).execute() }
+                .onSuccess { response ->
+                    windowsState.value = response.body() ?: emptyList()
+                }
+                .onFailure {
+                    it.printStackTrace()
+                    windowsState.value = emptyList()
+                }
+        }
+    }
+
+    fun findWindowById(windowId: Long) {
+        viewModelScope.launch(context = Dispatchers.IO) {
+            runCatching { ApiServices.roomsApiService.findWindowById(windowId).execute() }
+                .onSuccess { response ->
+                    selectedWindowState.value = response.body()
+                }
+                .onFailure {
+                    it.printStackTrace()
+                    selectedWindowState.value = null
+                }
+        }
+    }
+
+    fun deleteWindow(windowId: Long, onComplete: () -> Unit) {
+        viewModelScope.launch(context = Dispatchers.IO) {
+            runCatching { ApiServices.roomsApiService.deleteWindow(windowId).execute() }
+                .onSuccess {
+                    onComplete()
+                }
+                .onFailure {
+                    it.printStackTrace()
+                    onComplete()
                 }
         }
     }

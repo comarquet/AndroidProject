@@ -2,6 +2,7 @@ package com.automacorp.service
 
 import com.automacorp.model.RoomCommandDto
 import com.automacorp.model.RoomDto
+import com.automacorp.model.WindowDto
 import retrofit2.Call
 import retrofit2.http.Body
 import retrofit2.http.DELETE
@@ -29,4 +30,13 @@ interface RoomsApiService {
 
     @DELETE("rooms/{id}")
     fun deleteRoom(@Path("id") id: Long): Call<Void>
+
+    @GET("windows/{id}")
+    fun findWindowById(@Path("id") id: Long): Call<WindowDto>
+
+    @DELETE("windows/{id}")
+    fun deleteWindow(@Path("id") id: Long): Call<Void>
+
+    @GET("windows/{id}")
+    fun findWindowsByRoom(@Path("id") roomId: Long): Call<List<WindowDto>>
 }

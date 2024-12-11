@@ -1,5 +1,6 @@
 package com.automacorp
 
+import android.content.Intent
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
@@ -27,6 +28,7 @@ import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.automacorp.model.RoomDto
@@ -153,12 +155,21 @@ fun RoomListDetail(model: RoomViewModel, modifier: Modifier = Modifier) {
             valueRange = 10f..28f
         )
         Text(text = (round((model.room?.targetTemperature ?: 18.0) * 10) / 10).toString())
-
+        val context = LocalContext.current
         Button(
-            onClick = { onClick(name) },
-            modifier = Modifier.padding(8.dp).align(Alignment.CenterHorizontally)
+            onClick = {
+                val roomId = model.room?.id
+                if (roomId != null) {
+                    val intent = Intent(context, WindowListActivity::class.java)
+                    intent.putExtra("ROOM_ID", roomId)
+                    context.startActivity(intent)
+                }
+            },
+            modifier = Modifier
+                .padding(8.dp)
+                .align(Alignment.CenterHorizontally)
         ) {
-            Text(stringResource(R.string.app_go_windows))
+            Text(text = stringResource(R.string.app_go_windows))
         }
     }
 }

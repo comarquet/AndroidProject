@@ -18,4 +18,5 @@
     <string name="app_go_mail_description">Send email</string>
     <string name="act_room_delete">Delete room</string>
     <string name="app_go_windows">See windows</string>
+    <string name="act_window_delete">Delete Window</string>
 </resources>

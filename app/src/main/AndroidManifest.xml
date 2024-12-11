@@ -21,17 +21,22 @@
         <activity
             android:name=".RoomListActivity"
             android:exported="false"
-            android:label="RoomService"
+            android:label="RoomListActivity"
             android:theme="@style/Theme.Automacorp" />
         <activity
             android:name=".RoomDetailActivity"
             android:exported="false"
-            android:label="RoomService"
+            android:label="RoomDetailActivity"
+            android:theme="@style/Theme.Automacorp" />
+        <activity
+            android:name=".WindowListActivity"
+            android:exported="false"
+            android:label="WindowListActivity"
             android:theme="@style/Theme.Automacorp" />
         <activity
             android:name=".MainActivity"
             android:exported="true"
-            android:label="@string/app_name"
+            android:label="automacorp"
             android:theme="@style/Theme.Automacorp">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
