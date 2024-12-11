@@ -27,35 +27,40 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.automacorp.model.RoomDto
-import com.automacorp.model.WindowDto
-import com.automacorp.model.WindowStatus
 import kotlin.math.round
 
 class RoomActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        val param = intent.getStringExtra(MainActivity.ROOM_PARAM)
         val viewModel: RoomViewModel by viewModels()
+        val param = intent.getStringExtra(MainActivity.ROOM_PARAM)
 
-        if (param != null) {
-            // Handle input as a name directly and generate a room
-            val generatedRoom = generateRoom(param)
-            viewModel.room = generatedRoom
-        }
+        // Initialize an empty room for the user to fill in
+        viewModel.room = RoomDto(
+            id = 0L, // Placeholder until created
+            name = param.toString(),
+            currentTemperature = (15..30).random().toDouble(),
+            targetTemperature = (15..22).random().toDouble(),
+            windows = emptyList()
+        )
 
         val onRoomSave: () -> Unit = {
             if (viewModel.room != null) {
                 val roomDto: RoomDto = viewModel.room as RoomDto
-                println("Target temperature before save: ${roomDto.targetTemperature}")
                 println("RoomDto before save: $roomDto")
 
-                // Always create the room since it's generated from input
-                viewModel.createRoom(roomDto)
-                runOnUiThread {
-                    Toast.makeText(baseContext, "Room ${roomDto.name} was created", Toast.LENGTH_LONG).show()
+                // Always create the room since the user is setting parameters
+                viewModel.createRoom(roomDto) { createdRoom ->
+                    runOnUiThread {
+                        Toast.makeText(
+                            baseContext,
+                            "Room ${createdRoom.name} was created with ID: ${createdRoom.id}",
+                            Toast.LENGTH_LONG
+                        ).show()
+                    }
+                    finish()
                 }
-                finish()
             }
         }
 
@@ -70,36 +75,10 @@ class RoomActivity : ComponentActivity() {
                     floatingActionButton = { RoomUpdateButton(onRoomSave) },
                     modifier = Modifier.fillMaxSize()
                 ) { innerPadding ->
-                    if (viewModel.room != null) {
-                        RoomDetail(viewModel, Modifier.padding(innerPadding))
-                    } else {
-                        NoRoom(Modifier.padding(innerPadding))
-                    }
+                    RoomDetail(viewModel, Modifier.padding(innerPadding))
                 }
             }
         }
-    }
-
-    private fun generateRoom(name: String): RoomDto {
-        val id = System.currentTimeMillis() // Use current time as unique ID
-        val windows = (1..(1..6).random()).map { generateWindow(it.toLong(), id, name) }
-        return RoomDto(
-            id = id,
-            name = name,
-            currentTemperature = (15..30).random().toDouble(),
-            targetTemperature = (15..22).random().toDouble(),
-            windows = windows
-        )
-    }
-
-    private fun generateWindow(id: Long, roomId: Long, roomName: String): WindowDto {
-        return WindowDto(
-            id = id,
-            name = "Window $id",
-            roomId = roomId,
-            roomName = roomName,
-            windowStatus = WindowStatus.values().random()
-        )
     }
 }
 
@@ -125,10 +104,13 @@ fun RoomDetail(model: RoomViewModel, modifier: Modifier = Modifier) {
             style = MaterialTheme.typography.bodyMedium,
             modifier = Modifier.padding(top = 16.dp, bottom = 4.dp)
         )
-        Text(
-            text = "${model.room?.currentTemperature?.let { String.format("%.1f", it) } ?: "N/A"}°C",
-            style = MaterialTheme.typography.bodyLarge,
-            modifier = Modifier.padding(bottom = 16.dp)
+        OutlinedTextField(
+            value = model.room?.currentTemperature?.toString() ?: "",
+            onValueChange = { value ->
+                model.room = model.room?.copy(currentTemperature = value.toDoubleOrNull())
+            },
+            label = { Text(text = stringResource(R.string.act_room_current_temperature)) },
+            modifier = Modifier.fillMaxWidth()
         )
 
         // Target Temperature Input Field
@@ -137,10 +119,9 @@ fun RoomDetail(model: RoomViewModel, modifier: Modifier = Modifier) {
             style = MaterialTheme.typography.bodyMedium,
             modifier = Modifier.padding(bottom = 4.dp)
         )
-
         Slider(
             value = model.room?.targetTemperature?.toFloat() ?: 18.0f,
-            onValueChange = { 
+            onValueChange = {
                 val roundedTemp = Math.round(it * 10) / 10.0
                 model.room = model.room?.copy(targetTemperature = roundedTemp)
             },
@@ -153,17 +134,6 @@ fun RoomDetail(model: RoomViewModel, modifier: Modifier = Modifier) {
             valueRange = 10f..28f
         )
         Text(text = (round((model.room?.targetTemperature ?: 18.0) * 10) / 10).toString())
-    }
-}
-
-@Composable
-fun NoRoom(modifier: Modifier = Modifier) {
-    Column(modifier = modifier.padding(16.dp)) {
-        Text(
-            text = stringResource(R.string.act_room_none),
-            style = MaterialTheme.typography.bodyMedium,
-            modifier = Modifier.padding(16.dp)
-        )
     }
 }
 

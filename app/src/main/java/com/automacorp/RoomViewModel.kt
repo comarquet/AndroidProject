@@ -68,7 +68,7 @@ class RoomViewModel : ViewModel() {
         }
     }
 
-    fun createRoom(roomDto: RoomDto) {
+    fun createRoom(roomDto: RoomDto, onComplete: (RoomDto) -> Unit) {
         val command = RoomCommandDto(
             name = roomDto.name,
             targetTemperature = roomDto.targetTemperature?.let { Math.round(it * 10) / 10.0 },
@@ -80,12 +80,32 @@ class RoomViewModel : ViewModel() {
         viewModelScope.launch(context = Dispatchers.IO) {
             runCatching { ApiServices.roomsApiService.createRoom(command).execute() }
                 .onSuccess { response ->
-                    println("Response: ${response.body()}")
-                    room = response.body()
+                    val createdRoom = response.body()
+                    if (createdRoom != null) {
+                        room = createdRoom
+                        println("Response: $createdRoom")
+                        onComplete(createdRoom)
+                    } else {
+                        println("Failed to create room: Response body is null")
+                    }
                 }
                 .onFailure {
                     it.printStackTrace()
                 }
         }
     }
+
+    fun deleteRoom(id: Long, onComplete: () -> Unit) {
+        viewModelScope.launch(context = Dispatchers.IO) {
+            runCatching { ApiServices.roomsApiService.deleteRoom(id).execute() }
+                .onSuccess {
+                    onComplete()
+                }
+                .onFailure {
+                    it.printStackTrace()
+                    onComplete() // Ensure we return to the UI even on failure
+                }
+        }
+    }
+
 }

@@ -13,11 +13,19 @@ import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.viewModels
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material3.Button
+import androidx.compose.material3.ExtendedFloatingActionButton
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -43,6 +51,18 @@ class RoomDetailActivity : ComponentActivity() {
             }
         }
 
+        val onRoomDelete: () -> Unit = {
+            if (viewModel.room != null) {
+                val roomDto: RoomDto = viewModel.room as RoomDto
+                viewModel.deleteRoom(roomDto.id) {
+                    runOnUiThread {
+                        Toast.makeText(baseContext, "Room ${roomDto.name} was deleted", Toast.LENGTH_LONG).show()
+                        finish()
+                    }
+                }
+            }
+        }
+
         val navigateBack: () -> Unit = {
             finish()
         }
@@ -51,7 +71,15 @@ class RoomDetailActivity : ComponentActivity() {
             AutomacorpTheme {
                 Scaffold(
                     topBar = { AutomacorpTopAppBar("Room", navigateBack) },
-                    floatingActionButton = { RoomUpdateButton(onRoomSave) },
+                    floatingActionButton = {
+                        Column(
+                            modifier = Modifier.padding(8.dp)
+                        ) {
+                            RoomUpdateButton(onRoomSave)
+                            Spacer(modifier = Modifier.height(16.dp)) // Add space between buttons
+                            RoomDeleteButton(onRoomDelete)
+                        }
+                    },
                     modifier = Modifier.fillMaxSize()
                 ) { innerPadding ->
                     if (viewModel.room != null) {
@@ -60,9 +88,23 @@ class RoomDetailActivity : ComponentActivity() {
                 }
             }
         }
+
     }
 }
 
+@Composable
+fun RoomDeleteButton(onClick: () -> Unit) {
+    ExtendedFloatingActionButton(
+        onClick = { onClick() },
+        text = { Text(text = stringResource(R.string.act_room_delete)) },
+        icon = {
+            Icon(
+                imageVector = Icons.Filled.Delete,
+                contentDescription = stringResource(R.string.act_room_delete)
+            )
+        }
+    )
+}
 
 @Composable
 fun RoomListDetail(model: RoomViewModel, modifier: Modifier = Modifier) {
@@ -111,5 +153,12 @@ fun RoomListDetail(model: RoomViewModel, modifier: Modifier = Modifier) {
             valueRange = 10f..28f
         )
         Text(text = (round((model.room?.targetTemperature ?: 18.0) * 10) / 10).toString())
+
+        Button(
+            onClick = { onClick(name) },
+            modifier = Modifier.padding(8.dp).align(Alignment.CenterHorizontally)
+        ) {
+            Text(stringResource(R.string.app_go_windows))
+        }
     }
 }

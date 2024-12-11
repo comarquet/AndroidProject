@@ -16,4 +16,6 @@
     <string name="app_go_room_description">Rooms</string>
     <string name="app_go_github_description">Github</string>
     <string name="app_go_mail_description">Send email</string>
+    <string name="act_room_delete">Delete room</string>
+    <string name="app_go_windows">See windows</string>
 </resources>
