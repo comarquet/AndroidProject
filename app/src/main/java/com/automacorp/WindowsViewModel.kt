@@ -8,6 +8,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.automacorp.model.RoomCommandDto
 import com.automacorp.model.RoomDto
+import com.automacorp.model.SensorCommandDto
+import com.automacorp.model.SensorType
 import com.automacorp.model.WindowCommandDto
 import com.automacorp.model.WindowDto
 import com.automacorp.service.ApiServices
@@ -54,21 +56,21 @@ class WindowsViewModel : ViewModel() {
     fun updateWindow(id: Long, windowDto: WindowDto) {
         val command = WindowCommandDto(
             name = windowDto.name,
-            windowStatus = windowDto.windowStatus,
-            roomId = windowDto.roomId
+            roomId = windowDto.roomId,
+            windowStatus = windowDto.windowStatus // Directly use the `windowStatus` value
         )
 
         viewModelScope.launch(context = Dispatchers.IO) {
-            runCatching { ApiServices.windowsApiService.updateWindow(id, command).execute() }
+            runCatching {
+                ApiServices.windowsApiService.updateWindow(id, command).execute()
+            }
                 .onSuccess { response ->
-                    window = response.body()
+                    response.body()?.let { updatedWindow ->
+                        println("Window updated: $updatedWindow")
+                    }
                 }
                 .onFailure { exception ->
-                    if (exception is retrofit2.HttpException) {
-                    } else {
-                        Log.e("RoomUpdate", "Exception: ${exception.message}")
-                    }
-                    window = null
+                    Log.e("WindowUpdate", "Exception: ${exception.message}")
                 }
         }
     }

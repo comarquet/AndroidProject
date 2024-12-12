@@ -43,7 +43,6 @@ class RoomDetailActivity : ComponentActivity() {
         val param = intent.getLongExtra(RoomListActivity.ROOM_PARAM, -1L)
         if (param != -1L) {
             viewModel.findRoomFromList(param)
-            Log.d("RoomDetailActivity", "Room loaded: ${viewModel.room}")
         }
 
         val onRoomSave: () -> Unit = {

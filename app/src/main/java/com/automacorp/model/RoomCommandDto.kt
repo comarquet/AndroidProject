@@ -6,5 +6,5 @@ data class RoomCommandDto(
     val targetTemperature: Double?,
     val floor: Int?,
     val buildingId: Long?,
-    val windows: List<WindowDto> = emptyList()
+    val windows: List<WindowCommandDto> = emptyList()
 )

@@ -27,7 +27,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.automacorp.model.RoomDto
-import com.automacorp.model.WindowDto
+import com.automacorp.model.SensorCommandDto
+import com.automacorp.model.WindowCommandDto
+import com.automacorp.model.SensorDto
+import com.automacorp.model.SensorType
 import kotlin.math.round
 
 class RoomActivity : ComponentActivity() {
@@ -45,17 +48,15 @@ class RoomActivity : ComponentActivity() {
             currentTemperature = (15..30).random().toDouble(),
             targetTemperature = (15..22).random().toDouble(),
             windows = listOf(
-                WindowDto(
-                    id = 999L,
+                WindowCommandDto(
                     name = "Window 1",
-                    windowStatus = 0.0,
-                    roomId = 0L
+                    roomId = 0L,
+                    windowStatus = 0.0
                 ),
-                WindowDto(
-                    id = 999L,
+                WindowCommandDto(
                     name = "Window 2",
-                    windowStatus = 1.0,
-                    roomId = 0L
+                    roomId = 0L,
+                    windowStatus = 1.0
                 )
             )
         )
