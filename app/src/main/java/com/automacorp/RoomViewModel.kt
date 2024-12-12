@@ -1,5 +1,6 @@
 package com.automacorp
 
+import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -16,43 +17,48 @@ import kotlinx.coroutines.launch
 class RoomViewModel : ViewModel() {
     var room by mutableStateOf<RoomDto?>(null)
     val roomsState = MutableStateFlow(RoomList())
-    val windowsState = MutableStateFlow<List<WindowDto>>(emptyList())
-    val selectedWindowState = MutableStateFlow<WindowDto?>(null)
 
     fun findAll() {
         viewModelScope.launch(context = Dispatchers.IO) {
             runCatching { ApiServices.roomsApiService.findAll().execute() }
-                .onSuccess {
-                    val rooms = it.body() ?: emptyList()
+                .onSuccess { response ->
+                    val rooms = response.body() ?: emptyList()
                     roomsState.value = RoomList(rooms)
                 }
-                .onFailure {
-                    it.printStackTrace()
-                    roomsState.value = RoomList(emptyList(), it.stackTraceToString())
+                .onFailure { exception ->
+                    exception.printStackTrace()
+                    roomsState.value = RoomList(emptyList(), exception.stackTraceToString())
                 }
         }
     }
+
 
     fun findRoomFromList(id: Long) {
         viewModelScope.launch(context = Dispatchers.IO) {
             runCatching { ApiServices.roomsApiService.findById(id).execute() }
                 .onSuccess {
-                    room = it.body()
+                    if (it.isSuccessful && it.body() != null) {
+                        room = it.body()
+                    } else {
+                        room = null
+                    }
                 }
                 .onFailure {
                     it.printStackTrace()
+                    Log.e("RoomViewModel", "API call failed: ${it.message}")
                     room = null
                 }
         }
     }
+
 
     fun updateRoom(id: Long, roomDto: RoomDto) {
         val command = RoomCommandDto(
             name = roomDto.name,
             targetTemperature = roomDto.targetTemperature?.let { Math.round(it * 10) / 10.0 },
             currentTemperature = roomDto.currentTemperature,
-            floor = 1,
-            buildingId = -10
+            floor = roomDto.floor,
+            buildingId = roomDto.buildingId
         )
 
         viewModelScope.launch(context = Dispatchers.IO) {
@@ -62,9 +68,8 @@ class RoomViewModel : ViewModel() {
                 }
                 .onFailure { exception ->
                     if (exception is retrofit2.HttpException) {
-                        println("HTTP Exception: ${exception.code()}, ${exception.response()?.errorBody()?.string()}")
                     } else {
-                        println("Exception: ${exception.message}")
+                        Log.e("RoomUpdate", "Exception: ${exception.message}")
                     }
                     room = null
                 }
@@ -77,7 +82,8 @@ class RoomViewModel : ViewModel() {
             targetTemperature = roomDto.targetTemperature?.let { Math.round(it * 10) / 10.0 },
             currentTemperature = roomDto.currentTemperature,
             floor = 1,
-            buildingId = -10
+            buildingId = -10,
+            windows = roomDto.windows
         )
         println("Request Body: $command")
         viewModelScope.launch(context = Dispatchers.IO) {
@@ -98,6 +104,7 @@ class RoomViewModel : ViewModel() {
         }
     }
 
+
     fun deleteRoom(id: Long, onComplete: () -> Unit) {
         viewModelScope.launch(context = Dispatchers.IO) {
             runCatching { ApiServices.roomsApiService.deleteRoom(id).execute() }
@@ -110,44 +117,4 @@ class RoomViewModel : ViewModel() {
                 }
         }
     }
-
-    fun findWindowsByRoom(roomId: Long) {
-        viewModelScope.launch(context = Dispatchers.IO) {
-            runCatching { ApiServices.roomsApiService.findWindowsByRoom(roomId).execute() }
-                .onSuccess { response ->
-                    windowsState.value = response.body() ?: emptyList()
-                }
-                .onFailure {
-                    it.printStackTrace()
-                    windowsState.value = emptyList()
-                }
-        }
-    }
-
-    fun findWindowById(windowId: Long) {
-        viewModelScope.launch(context = Dispatchers.IO) {
-            runCatching { ApiServices.roomsApiService.findWindowById(windowId).execute() }
-                .onSuccess { response ->
-                    selectedWindowState.value = response.body()
-                }
-                .onFailure {
-                    it.printStackTrace()
-                    selectedWindowState.value = null
-                }
-        }
-    }
-
-    fun deleteWindow(windowId: Long, onComplete: () -> Unit) {
-        viewModelScope.launch(context = Dispatchers.IO) {
-            runCatching { ApiServices.roomsApiService.deleteWindow(windowId).execute() }
-                .onSuccess {
-                    onComplete()
-                }
-                .onFailure {
-                    it.printStackTrace()
-                    onComplete()
-                }
-        }
-    }
-
 }

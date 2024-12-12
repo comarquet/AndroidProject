@@ -26,9 +26,22 @@ object ApiServices {
         Retrofit.Builder()
             .addConverterFactory(MoshiConverterFactory.create())
             .client(client)
-            .baseUrl("http://automacorp.devmind.cleverapps.io/api/") // (2)
+            .baseUrl("http://192.168.1.124:8080/api/") // (2)
             .build()
             .create(RoomsApiService::class.java)
+    }
+
+    val windowsApiService: WindowsApiService by lazy {
+        val client = getUnsafeOkHttpClient()
+            .addInterceptor(BasicAuthInterceptor(API_USERNAME, API_PASSWORD))
+            .build()
+
+        Retrofit.Builder()
+            .addConverterFactory(MoshiConverterFactory.create())
+            .client(client)
+            .baseUrl("http://192.168.1.124:8080/api/") // (2)
+            .build()
+            .create(WindowsApiService::class.java)
     }
 
     private fun getUnsafeOkHttpClient(): OkHttpClient.Builder =
@@ -50,7 +63,7 @@ object ApiServices {
                 it.init(null, arrayOf(trustManager), SecureRandom())
             }
             sslSocketFactory(sslContext.socketFactory, trustManager)
-            hostnameVerifier { hostname, _ -> hostname.contains("cleverapps.io") }
+            hostnameVerifier { hostname, _ -> hostname.contains("localhost") }
             addInterceptor(BasicAuthInterceptor(API_USERNAME, API_PASSWORD))
         }
 }

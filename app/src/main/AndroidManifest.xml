@@ -34,6 +34,11 @@
             android:label="WindowListActivity"
             android:theme="@style/Theme.Automacorp" />
         <activity
+            android:name=".WindowDetailActivity"
+            android:exported="false"
+            android:label="WindowDetailActivity"
+            android:theme="@style/Theme.Automacorp" />
+        <activity
             android:name=".MainActivity"
             android:exported="true"
             android:label="automacorp"

@@ -10,6 +10,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import com.automacorp.ui.theme.AutomacorpTheme
 import android.os.Bundle
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.viewModels
@@ -42,12 +43,13 @@ class RoomDetailActivity : ComponentActivity() {
         val param = intent.getLongExtra(RoomListActivity.ROOM_PARAM, -1L)
         if (param != -1L) {
             viewModel.findRoomFromList(param)
+            Log.d("RoomDetailActivity", "Room loaded: ${viewModel.room}")
         }
 
         val onRoomSave: () -> Unit = {
             if (viewModel.room != null) {
                 val roomDto: RoomDto = viewModel.room as RoomDto
-                viewModel.updateRoom(roomDto.id, roomDto)
+                viewModel.updateRoom(roomDto.Id, roomDto)
                 Toast.makeText(baseContext, "Room ${roomDto.name} was updated", Toast.LENGTH_LONG).show()
                 finish()
             }
@@ -56,7 +58,7 @@ class RoomDetailActivity : ComponentActivity() {
         val onRoomDelete: () -> Unit = {
             if (viewModel.room != null) {
                 val roomDto: RoomDto = viewModel.room as RoomDto
-                viewModel.deleteRoom(roomDto.id) {
+                viewModel.deleteRoom(roomDto.Id) {
                     runOnUiThread {
                         Toast.makeText(baseContext, "Room ${roomDto.name} was deleted", Toast.LENGTH_LONG).show()
                         finish()
@@ -78,7 +80,7 @@ class RoomDetailActivity : ComponentActivity() {
                             modifier = Modifier.padding(8.dp)
                         ) {
                             RoomUpdateButton(onRoomSave)
-                            Spacer(modifier = Modifier.height(16.dp)) // Add space between buttons
+                            Spacer(modifier = Modifier.height(16.dp))
                             RoomDeleteButton(onRoomDelete)
                         }
                     },
@@ -119,7 +121,9 @@ fun RoomListDetail(model: RoomViewModel, modifier: Modifier = Modifier) {
         )
         OutlinedTextField(
             value = model.room?.name ?: "",
-            onValueChange = { model.room?.name = it },
+            onValueChange = { newName ->
+                model.room = model.room?.copy(name = newName)
+            },
             label = { Text(text = stringResource(R.string.act_room_name)) },
             modifier = Modifier.fillMaxWidth()
         )
@@ -145,7 +149,9 @@ fun RoomListDetail(model: RoomViewModel, modifier: Modifier = Modifier) {
 
         Slider(
             value = model.room?.targetTemperature?.toFloat() ?: 18.0f,
-            onValueChange = { model.room = model.room?.copy(targetTemperature = it.toDouble()) },
+            onValueChange = { newValue ->
+                model.room = model.room?.copy(targetTemperature = newValue.toDouble())
+            },
             colors = SliderDefaults.colors(
                 thumbColor = MaterialTheme.colorScheme.secondary,
                 activeTrackColor = MaterialTheme.colorScheme.secondary,
@@ -154,14 +160,23 @@ fun RoomListDetail(model: RoomViewModel, modifier: Modifier = Modifier) {
             steps = 0,
             valueRange = 10f..28f
         )
-        Text(text = (round((model.room?.targetTemperature ?: 18.0) * 10) / 10).toString())
+
+        // Display the Target Temperature
+        Text(
+            text = (round((model.room?.targetTemperature ?: 18.0) * 10) / 10).toString(),
+            style = MaterialTheme.typography.bodyLarge,
+            modifier = Modifier.padding(top = 8.dp)
+        )
+
         val context = LocalContext.current
+
+        // Navigate to Window List Activity
         Button(
             onClick = {
-                val roomId = model.room?.id
+                val roomId = model.room?.Id
                 if (roomId != null) {
                     val intent = Intent(context, WindowListActivity::class.java)
-                    intent.putExtra("ROOM_ID", roomId)
+                    intent.putExtra(WindowListActivity.ROOM_ID, roomId)
                     context.startActivity(intent)
                 }
             },

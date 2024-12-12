@@ -2,6 +2,7 @@ package com.automacorp
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -16,6 +17,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
@@ -41,10 +43,10 @@ class RoomListActivity : ComponentActivity() {
         const val ROOM_PARAM = "com.automacorp.room.detail"
     }
 
+    private val viewModel: RoomViewModel by viewModels()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        val viewModel: RoomViewModel by viewModels()
 
         val navigateBack: () -> Unit = {
             finish()
@@ -58,24 +60,24 @@ class RoomListActivity : ComponentActivity() {
         }
 
         setContent {
-            val roomsState by viewModel.roomsState.asStateFlow().collectAsState() // (1)
-            LaunchedEffect(Unit) { // (2)
-                viewModel.findAll()
-            }
+            val roomsState by viewModel.roomsState.asStateFlow().collectAsState()
             if (roomsState.error != null) {
-                setContent {
-                    RoomList(emptyList(), navigateBack, openRoom)
-                }
+                RoomList(emptyList(), navigateBack, openRoom)
                 Toast
                     .makeText(applicationContext, "Error on rooms loading ${roomsState.error}", Toast.LENGTH_LONG)
-                    .show() // (3)
+                    .show()
             } else {
-                RoomList(roomsState.rooms, navigateBack, openRoom) // (4)
+                RoomList(roomsState.rooms, navigateBack, openRoom)
             }
         }
+    }
 
+    override fun onResume() {
+        super.onResume()
+        viewModel.findAll() // Refresh the room list when returning to this activity
     }
 }
+
 
 
 @Composable
@@ -99,10 +101,11 @@ fun RoomList(
                     verticalArrangement = Arrangement.spacedBy(8.dp),
                     modifier = Modifier.padding(innerPadding),
                 ) {
-                    items(rooms, key = { it.id }) {
+                    itemsIndexed(rooms) { index, room ->
                         RoomItem(
-                            room = it,
-                            modifier = Modifier.clickable { openRoom(it.id) },
+                            room = room,
+                            modifier = Modifier.clickable {
+                                openRoom(room.Id) },
                         )
                     }
                 }

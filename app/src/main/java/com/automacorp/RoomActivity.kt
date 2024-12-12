@@ -27,6 +27,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.automacorp.model.RoomDto
+import com.automacorp.model.WindowDto
 import kotlin.math.round
 
 class RoomActivity : ComponentActivity() {
@@ -36,26 +37,38 @@ class RoomActivity : ComponentActivity() {
         val viewModel: RoomViewModel by viewModels()
         val param = intent.getStringExtra(MainActivity.ROOM_PARAM)
 
-        // Initialize an empty room for the user to fill in
         viewModel.room = RoomDto(
-            id = 0L, // Placeholder until created
+            Id = 999L,
             name = param.toString(),
+            floor = 1,
+            buildingId = 1001L,
             currentTemperature = (15..30).random().toDouble(),
             targetTemperature = (15..22).random().toDouble(),
-            windows = emptyList()
+            windows = listOf(
+                WindowDto(
+                    id = 999L,
+                    name = "Window 1",
+                    windowStatus = 0.0,
+                    roomId = 0L
+                ),
+                WindowDto(
+                    id = 999L,
+                    name = "Window 2",
+                    windowStatus = 1.0,
+                    roomId = 0L
+                )
+            )
         )
 
         val onRoomSave: () -> Unit = {
             if (viewModel.room != null) {
                 val roomDto: RoomDto = viewModel.room as RoomDto
-                println("RoomDto before save: $roomDto")
 
-                // Always create the room since the user is setting parameters
                 viewModel.createRoom(roomDto) { createdRoom ->
                     runOnUiThread {
                         Toast.makeText(
                             baseContext,
-                            "Room ${createdRoom.name} was created with ID: ${createdRoom.id}",
+                            "Room ${createdRoom.name} was created with ID: ${createdRoom.Id}",
                             Toast.LENGTH_LONG
                         ).show()
                     }
@@ -93,7 +106,9 @@ fun RoomDetail(model: RoomViewModel, modifier: Modifier = Modifier) {
         )
         OutlinedTextField(
             value = model.room?.name ?: "",
-            onValueChange = { model.room?.name = it },
+            onValueChange = { newName ->
+                model.room = model.room?.copy(name = newName)
+            },
             label = { Text(text = stringResource(R.string.act_room_name)) },
             modifier = Modifier.fillMaxWidth()
         )
