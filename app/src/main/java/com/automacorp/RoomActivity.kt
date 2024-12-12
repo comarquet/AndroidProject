@@ -73,7 +73,6 @@ class RoomActivity : ComponentActivity() {
                             Toast.LENGTH_LONG
                         ).show()
                     }
-                    finish()
                 }
             }
         }

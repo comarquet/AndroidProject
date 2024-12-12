@@ -30,6 +30,10 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -131,52 +135,67 @@ fun WindowUpdateButton(onClick: () -> Unit) {
 
 @Composable
 fun WindowListDetail(model: WindowsViewModel, modifier: Modifier = Modifier) {
+    val window = model.window
+    if (window == null) {
+        Text("Window details are unavailable", modifier = Modifier.padding(16.dp))
+        return
+    }
+
+    // Initialize windowState from the current window status
+    var windowState by remember { mutableStateOf(window.windowStatus == 1.0) }
+
     Column(modifier = modifier.padding(16.dp)) {
         // Window Name
         Text(
-            text = stringResource(R.string.act_window_name),
+            text = "Window Name",
             style = MaterialTheme.typography.labelSmall,
             modifier = Modifier.padding(bottom = 4.dp)
         )
         OutlinedTextField(
-            value = model.window?.name ?: "",
+            value = window.name,
             onValueChange = { newName ->
-                model.window = model.window?.copy(name = newName)
+                // Update the WindowDto in the ViewModel
+                model.window = window.copy(name = newName)
             },
-            label = { Text(text = stringResource(R.string.act_window_name)) },
+            label = { Text(text = "Window Name") },
             modifier = Modifier.fillMaxWidth()
         )
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        val context = LocalContext.current
+        // Show current window state
+        Text(
+            text = if (windowState) "Status: Opened" else "Status: Closed",
+            style = MaterialTheme.typography.bodyMedium,
+            modifier = Modifier.padding(bottom = 8.dp)
+        )
 
+        // Open Button
         Button(
             onClick = {
-                model.window?.id?.let { id ->
-                    model.openWindow(id) {
-                        Toast.makeText(context, "Window ${model.window?.name} was opened", Toast.LENGTH_LONG).show()
-                    }
-                }
+                windowState = true
+                // Update the window's status in the ViewModel
+                model.window = window.copy(windowStatus = 1.0)
             },
+            enabled = !windowState,
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text(text = stringResource(R.string.act_window_open))
+            Text(text = "Open")
         }
 
         Spacer(modifier = Modifier.height(8.dp))
 
+        // Close Button
         Button(
             onClick = {
-                model.window?.id?.let { id ->
-                    model.closeWindow(id) {
-                        Toast.makeText(context, "Window ${model.window?.name} was closed", Toast.LENGTH_LONG).show()
-                    }
-                }
+                windowState = false
+                // Update the window's status in the ViewModel
+                model.window = window.copy(windowStatus = 0.0)
             },
+            enabled = windowState,
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text(text = stringResource(R.string.act_window_close))
+            Text(text = "Close")
         }
     }
 }

@@ -17,6 +17,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class WindowsViewModel : ViewModel() {
     var window by mutableStateOf<WindowDto?>(null)
@@ -89,28 +90,41 @@ class WindowsViewModel : ViewModel() {
     }
 
     fun openWindow(id: Long, onComplete: () -> Unit) {
-        viewModelScope.launch(context = Dispatchers.IO) {
+        viewModelScope.launch(Dispatchers.IO) {
             runCatching {
                 ApiServices.windowsApiService.openWindow(id).execute()
-            }.onSuccess {
-                onComplete()
-            }.onFailure {
-                it.printStackTrace()
-                onComplete()
             }
+                .onSuccess {
+                    withContext(Dispatchers.Main) {
+                        onComplete()
+                    }
+                }
+                .onFailure { exception ->
+                    exception.printStackTrace()
+                    withContext(Dispatchers.Main) {
+                        onComplete()
+                    }
+                }
         }
     }
 
     fun closeWindow(id: Long, onComplete: () -> Unit) {
-        viewModelScope.launch(context = Dispatchers.IO) {
+        viewModelScope.launch(Dispatchers.IO) {
             runCatching {
                 ApiServices.windowsApiService.closeWindow(id).execute()
-            }.onSuccess {
-                onComplete()
-            }.onFailure {
-                it.printStackTrace()
-                onComplete()
             }
+                .onSuccess {
+                    withContext(Dispatchers.Main) {
+                        onComplete()
+                    }
+                }
+                .onFailure { exception ->
+                    exception.printStackTrace()
+                    withContext(Dispatchers.Main) {
+                        onComplete()
+                    }
+                }
         }
     }
+
 }

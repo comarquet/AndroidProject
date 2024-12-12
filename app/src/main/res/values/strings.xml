@@ -23,4 +23,6 @@
     <string name="act_window_name">Window name</string>
     <string name="act_window_open">Open</string>
     <string name="act_window_close">Close</string>
+    <string name="window_state_open">Window open</string>
+    <string name="window_state_closed">Window closed</string>
 </resources>
