@@ -10,7 +10,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import com.automacorp.ui.theme.AutomacorpTheme
 import android.os.Bundle
-import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.viewModels
@@ -33,6 +32,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.automacorp.model.RoomDto
+import com.automacorp.views.RoomViewModel
 import kotlin.math.round
 
 class RoomDetailActivity : ComponentActivity() {

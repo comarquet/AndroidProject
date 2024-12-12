@@ -1,4 +1,4 @@
-package com.automacorp
+package com.automacorp.views
 
 import android.util.Log
 import androidx.compose.runtime.getValue
@@ -6,16 +6,12 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.automacorp.model.RoomCommandDto
-import com.automacorp.model.RoomDto
-import com.automacorp.model.SensorCommandDto
-import com.automacorp.model.SensorType
+import com.automacorp.WindowList
 import com.automacorp.model.WindowCommandDto
 import com.automacorp.model.WindowDto
 import com.automacorp.service.ApiServices
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 

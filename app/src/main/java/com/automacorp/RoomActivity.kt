@@ -27,10 +27,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.automacorp.model.RoomDto
-import com.automacorp.model.SensorCommandDto
 import com.automacorp.model.WindowCommandDto
-import com.automacorp.model.SensorDto
-import com.automacorp.model.SensorType
+import com.automacorp.views.RoomViewModel
 import kotlin.math.round
 
 class RoomActivity : ComponentActivity() {
